@@ -1,0 +1,62 @@
+{
+  "name": "horticrafting-generator",
+  "version": "1.0.0",
+  "description": "A tool that uses OCR to capture a Path of Exile screenshot and generate text of the harvest crafts",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron-forge start",
+    "rebuild": "electron-rebuild --runtime=electron --target=11.3.0 --disturl=https://atom.io/download/atom-shell --abi=85",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
+  },
+  "keywords": [
+    "ocr",
+    "poe",
+    "widget"
+  ],
+  "author": "Theofilos Mouratidis",
+  "license": "MIT",
+  "devDependencies": {
+    "@electron-forge/cli": "^6.0.0-beta.54",
+    "@electron-forge/maker-deb": "^6.0.0-beta.54",
+    "@electron-forge/maker-rpm": "^6.0.0-beta.54",
+    "@electron-forge/maker-squirrel": "^6.0.0-beta.54",
+    "@electron-forge/maker-zip": "^6.0.0-beta.54",
+    "electron": "^11.3.0",
+    "electron-build": "0.0.3"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.0",
+    "robotjs": "^0.6.0",
+    "sharp": "^0.27.1",
+    "tesseract.js": "^2.1.4"
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {},
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "horticrafting_generator"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
+        }
+      ]
+    }
+  }
+}

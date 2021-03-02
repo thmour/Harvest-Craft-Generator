@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Harvest Crafts</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <style>
+        @font-face {
+            font-family: "Fontin";
+            src: url("resources/Fontin-Regular.otf");
+        }
+        html,
+        body {
+            height: 100%;
+            -webkit-app-region: drag;
+        }
+        body {
+            margin: 0;
+            background: linear-gradient(45deg, #d32323, #be7017);
+            font-family: "Fontin", serif;
+            font-weight: 100;
+        }
+        .container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+        }
+        table {
+            width: 800px;
+            border-collapse: collapse;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        th,
+        td {
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.75);
+            color: #fff;
+        }
+        td.craft {
+            color: grey;
+            word-break: break-word;
+        }
+        td:not(.craft) {
+            text-align: center;
+        }
+        td.price {
+            -webkit-app-region: no-drag;
+            white-space: nowrap;
+        }
+        th {
+            text-align: center;
+        }
+        thead th {
+            background-color: #000000;
+        }
+        tbody td {
+            position: relative;
+        }
+        .btn_cont {
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+        }
+        button {
+            cursor: pointer;
+            position: relative;
+            color: #fff !important;
+            text-transform: uppercase;
+            text-decoration: none;
+            background: rgba(0, 0, 0, 0.75);
+            padding: 20px;
+            border-radius: 5px;
+            margin-left: 10px;
+            margin-right: 10px;
+            margin-top: 10px;
+            border: none;
+            transition: all 0.4s ease 0s;
+            -webkit-app-region: no-drag;
+        }
+        button:hover {
+            background: rgba(0, 0, 0, 1);
+            box-shadow: 5px 40px -10px rgba(0,0,0,0.57);
+            transition: all 0.4s ease 0s;
+        }
+        button:focus, td:focus{
+            outline: none !important;
+        }
+        select {
+            -webkit-app-region: no-drag;
+            outline: none;
+            padding: 5px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            -webkit-app-region: no-drag;
+        }
+        thead tr:nth-child(2) {
+            width: 400px;
+        }
+        tbody tr:nth-child(2) {
+            width: 400px;
+        }
+
+        /* Hide default HTML checkbox */
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        /* The slider */
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: #d32323;
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #d32323;
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        .popup {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* The actual popup */
+        .popup .popuptext {
+            visibility: hidden;
+            width: 160px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -80px;
+        }
+
+        /* Popup arrow */
+        .popup .popuptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+
+        /* Toggle this class - hide and show the popup */
+        .popup .show {
+            visibility: visible;
+        }
+
+        #ign:empty::before {
+            content: attr(data-placeholder);
+        }
+
+        #ign {
+            display: inline-block;
+            border: 2px solid black;
+            cursor: text;
+            padding: 5px;
+            -webkit-app-region: no-drag;
+            outline: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="ctable" class="container">
+        <table>
+            <thead><tr><th>Number</th><th>Craft</th><th>Level</th><th>Price</th><th>Currency</th><th>Enabled</th></tr></thead>
+            <tbody>
+                <script>
+                    let { remote } = require('electron')
+                    let craft_colours = {
+                        Caster: '#b3f8fe',
+                        Physical: '#c79d93',
+                        Red: '#c8676e',
+                        Blue: '#a2cffb',
+                        Green: '#86bda3',
+                        Fire: '#ff9a77',
+                        Cold: '#93d8ff',
+                        Lightning: '#f8cb76',
+                        Attack: '#da814d',
+                        Life: '#c96e6e',
+                        Speed: '#cfeea5',
+                        Defence: '#a88f67',
+                        Chaos: '#d8a7d3',
+                        Unique: '#af6025',
+                        Critical: '#b2a7d6',
+                        Magic: '#8888ff'
+                    }
+                    let colorise = (word) => {
+                        if (word in craft_colours) {
+                            return `<span style="color: ${craft_colours[word]};">${word}</span>`
+                        } else if (word[0] == word[0].toUpperCase() || word.replace('non-', '') in craft_colours || ['add', 'lucky'].includes(word)) {
+                            return `<span style="color: white;">${word}</span>`
+                        } else {
+                            return word
+                        }
+                    }
+                    let craft_list = remote.getGlobal('craft_list')
+                    let craft_set = {}
+                    for (craft of craft_list) {
+                        if (!(craft in craft_set))
+                            craft_set[craft] = 1
+                        else
+                            craft_set[craft] += 1
+                    }
+                    console.log(craft_set)
+                    for (craft in craft_set) {
+                        let [text, level] = craft.split('Level').map(txt => txt.trim())
+                        document.write(
+                            `<tr>
+                                <td class="number">x${craft_set[craft]}</td>
+                                <td class="craft">${text.split(/\s+/).map(word => colorise(word)).join(' ')}</td>
+                                <td class="level">${level}</td>
+                                <td contenteditable="true" onclick="document.execCommand('selectAll',false,null)" spellcheck="false" class="price">Edit</td>
+                                <td>
+                                    <select>
+                                        <option value="c">c</option>
+                                        <option value="ex">ex</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <label class="switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </td>
+                            </tr>`
+                        )
+                    }
+                </script>
+            </tbody>
+        </table>
+        <div class="btn_cont">
+            <div id="ign" contenteditable="true" data-placeholder="In-game Name" spellcheck="false"></div>
+            <select id="league">
+                <option value="Softcore">Softcore</option>
+                <option value="Hardcore">Hardcore</option>
+                <option value="Softcore Standard">Softcore Standard</option>
+                <option value="Hardcore Standard">Hardcore Standard</option>
+            </select>
+            <button class="popup" onclick="cptext()">Copy Text<span class="popuptext" id="cp_popup">Copied!</span></button>
+            <button onclick="_close()">Close</button>
+        </div>
+    </div>
+    <script>
+        function cptext() {
+            //todo
+            let clipboard_text = ''
+            let numbers = []
+            let crafts = []
+            let levels = []
+            let prices = []
+            document.querySelectorAll('tbody tr').forEach(tr => {
+                if (tr.getElementsByTagName('input')[0].checked) {
+                    let span_texts = ''
+                    tr.querySelectorAll('td span').forEach(span => {
+                        span_texts += span.innerHTML + ' '
+                    })
+                    crafts.push(span_texts)
+                    numbers.push(tr.getElementsByClassName('number')[0].innerHTML)
+                    levels.push(tr.getElementsByClassName('level')[0].innerHTML)
+                    prices.push((+tr.getElementsByClassName('price')[0].innerHTML || '?')+tr.getElementsByTagName('select')[0].value)
+                }
+            })
+            let pad_len_craft = crafts.reduce((p, v) => Math.max(p.length || p, v.length))
+            let pad_len_price = prices.reduce((p, v) => Math.max(p.length || p, v.length))
+            let pad_len_number = numbers.reduce((p, v) => Math.max(p.length || p, v.length))
+            crafts = crafts.map(txt => txt.padEnd(pad_len_craft, ' '))
+            prices = prices.map(txt => txt.padStart(pad_len_price, ' '))
+            numbers = numbers.map(txt => txt.padStart(pad_len_number, ' '))
+            let ign = document.getElementById('ign').innerHTML
+            clipboard_text += `\`WTS ${document.getElementById('league').value} -- IGN: ${ign.length == 0 ? 'PM for info' : ign}\`\n`
+            for (let i = 0; i < crafts.length; i++) {
+                clipboard_text += `\`${numbers[i]} ${crafts[i]}\tlvl${levels[i]}\t< ${prices[i]} >\`\n`
+            }
+            navigator.clipboard.writeText(clipboard_text).then(() => {
+                let item = document.getElementById('cp_popup')
+                if (!item.classList.contains('show')) {
+                    item.classList.add('show')
+                    setTimeout(() => item.classList.remove('show'), 1000)
+                }
+            })
+        }
+        function _close() {
+            remote.getCurrentWindow().close()
+        }
+        let { width, height } = document.getElementById('ctable').getBoundingClientRect()
+        let win = remote.getCurrentWindow()
+        //win.webContents.openDevTools()
+        win.setSize(width, height)
+        win.show()
+    </script>
+</body>
+</html>

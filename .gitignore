@@ -1,0 +1,5 @@
+node_modules
+.vscode
+out
+eng.traineddata
+package-lock.json
