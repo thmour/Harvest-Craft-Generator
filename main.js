@@ -100,7 +100,15 @@ async function do_craftnum(source) {
                     .negate().threshold(190).toBuffer()]
 
     const ocr_results = await Promise.all(pics.map((pic) => pool.addJob('recognize', pic)));
-    num_crafts = +ocr_results[0].data.text.split('/')[0].trim()
+    let result_text = ocr_results[0].data.text
+    if (result_text.indexOf('/') == -1) {
+        num_crafts = +result_text.replace(/.\s*10/, '').replaceAll(/[^0-9]/g, '').trim()
+        if (num_crafts > 10 || num_crafts == NaN) {
+            num_crafts = +result_text.match(/[0-9](?!0)|10/)[0]
+        }
+    } else {
+        num_crafts = +result_text.split('/')[0].trim()
+    }
 } 
 
 async function do_shortcut () {
