@@ -110,16 +110,16 @@ async function do_shortcut () {
     let options = { types: ['screen'], thumbnailSize: my_screen.size }
     
     //capture screenshot and add the number of crafts and the crafts
-    let old_pos = null
+    let old_pos = robot.getMousePos()
+    let { width, height } = options.thumbnailSize
+    robot.moveMouse(width * 0.3, height * 0.3)
+    for (let i = 0; i < 5; i++)
+        robot.scrollMouse(0, 200)
     await desktopCapturer.getSources(options).then(async sources => {
         for (source of sources) {
             if (source.display_id == my_screen.id.toString()) {
                 return new Promise(async (resolve, reject) => {
                     // get to top 5 crafts
-                    old_pos = robot.getMousePos()
-                    let { width, height } = source.thumbnail.getSize()
-                    robot.moveMouse(width * 0.3, height * 0.3)
-                    robot.scrollMouse(0, 500)
                     await do_craftnum(source)
                     await do_generate(source)
                     resolve()
@@ -130,13 +130,14 @@ async function do_shortcut () {
 
     if (num_crafts > 5) {
         //capture screenshot for the rest
+        let { width, height } = options.thumbnailSize
+        robot.moveMouse(width * 0.3, height * 0.3)
+        for (let i = 0; i < 5; i++)
+            robot.scrollMouse(0, -200)
         await desktopCapturer.getSources(options).then(async sources => {
             for (source of sources) {
                 if (source.display_id == my_screen.id.toString()) {
                     return new Promise(async (resolve, reject) => {
-                        let { width, height } = source.thumbnail.getSize()
-                        robot.moveMouse(width * 0.3, height * 0.3)
-                        robot.scrollMouse(0, -500)
                         await do_generate(source)
                         resolve()
                     })
@@ -155,6 +156,7 @@ async function do_shortcut () {
         height: 600,
         show: false,
         frame: false,
+        resizable: false,
         webPreferences: {
             contextIsolation: false,
             nodeIntegration: true,
