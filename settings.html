@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Harvest Craft Generator</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <style>
+        td {
+            vertical-align: middle;
+        }
+        textarea {
+            resize: none;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Settings</h1>
+    <p>(Click the textbot and enter hotkey. Close the window to save)</p>
+    <table>
+        <tr><td>Generate Hotkey: </td><td><textarea id="hotkey" cols="20" rows="1" readonly></textarea></td><td></td></tr>
+    </table>
+    <script>
+        const { remote } = require('electron')
+        const settings = remote.require('electron-settings')
+        document.getElementById('hotkey').value = settings.getSync('global.hotkey')
+        let hotkey_map = new Set()
+        let hotkey_timeout = null
+        document.getElementById('hotkey').addEventListener("keydown", async ev => {
+            hotkey_map.add(ev.key.toUpperCase().replace('CONTROL','CTRL'))
+            document.getElementById('hotkey').value = [...hotkey_map].join('+')
+            if (hotkey_timeout) clearTimeout(hotkey_timeout)
+            hotkey_timeout = setTimeout(() => {
+                let hotkey = document.getElementById('hotkey').value
+                settings.setSync('global.hotkey', hotkey)
+                hotkey_timeout = null
+                hotkey_map.clear()
+            }, 600)
+        })
+    </script>
+</body>
+</html>

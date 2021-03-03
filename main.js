@@ -15,6 +15,7 @@ const {
 const sharp = require('sharp')
 const robot = require('robotjs')
 const path = require('path')
+const settings = require('electron-settings')
 
 //ocr init
 let pool = createScheduler()
@@ -182,11 +183,37 @@ async function do_shortcut () {
  * @param {Electron.BrowserWindow} focusedWindow 
  * @param {Electron.WebContents} focusedWebContents 
  */
+function do_settings(event, focusedWindow, focusedWebContents) {
+    let settings_window = new BrowserWindow({
+        width: 600,
+        height: 300,
+        resizable: false,
+        webPreferences: {
+            contextIsolation: false,
+            nodeIntegration: true,
+            enableRemoteModule: true,
+        }
+    })
+    global['do_shortcut'] = do_shortcut
+    settings_window.setMenuBarVisibility(false)
+    settings_window.loadFile('settings.html')
+    settings_window.on('closed', () => {
+        globalShortcut.unregisterAll()
+        globalShortcut.register(settings.getSync('global.hotkey'), do_shortcut)
+    })
+}
+
+/**
+ * 
+ * @param {Electron.KeyboardEvent} event 
+ * @param {Electron.BrowserWindow} focusedWindow 
+ * @param {Electron.WebContents} focusedWebContents 
+ */
 function do_howto(event, focusedWindow, focusedWebContents) {
     dialog.showMessageBox({
         type: 'none',
         title: 'Howto',
-        message: `Open your craft tab on the left side and hit Ctrl+Alt+C.
+        message: `Open your craft tab on the left side and hit the hotkey (check settings).
                   The mouse pointer will move and scan your crafts. 
                   After the scan, a pop-up window will appear where you can edit the information.
                   Once done with the edits, click Copy Text and paste it into discord`.replaceAll(/\n\s+/g,'\n'),
@@ -211,13 +238,24 @@ function do_about(event, focusedWindow, focusedWebContents) {
 
 function do_exit() {
     workers.forEach((w) => w.terminate())
+    pool.terminate()
+    globalShortcut.unregisterAll()
     app.quit()
 }
 
 let tray = null;
 app.whenReady()
-.then(() => {
-    globalShortcut.register('Alt+CmdOrCtrl+C', do_shortcut)
+.then(async () => {
+    let config = await settings.has('global')
+    if (!config) {
+        await settings.set('global', {
+            hotkey: 'SHIFT+D',
+        })
+    }
+})
+.then(async () => {
+    let shortcut = await settings.get('global.hotkey')
+    globalShortcut.register(shortcut, do_shortcut)
 })
 .then(createLoadingWindow)
 .then(async () => {
@@ -238,6 +276,7 @@ app.whenReady()
 .then(() => {
     tray = new Tray(path.join(__dirname, 'resources/app.ico'))
     const ctxMenu = Menu.buildFromTemplate([
+        { label: 'Settings', click: do_settings },
         { label: 'How to Use', click: do_howto },
         { label: 'About', click: do_about },
         { label: 'Exit', click: do_exit },
@@ -245,5 +284,4 @@ app.whenReady()
     tray.setToolTip('Harvest craft generator')
     tray.setContextMenu(ctxMenu)
 })
-
 app.on('window-all-closed', () => {})
