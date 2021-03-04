@@ -21,7 +21,7 @@ has the same scaling for every resolution then the relative positions should wor
 How to Use
 ==
 
-Open up your harvest craft tab on the left side (when inventory is shown) and hit **Shift+D** (you can change it on tray settings). Your mouse will move
+Open up your harvest craft tab on the left side (when inventory is shown) and hit **Ctrl+Shift+D** (you can change it on tray settings). Your mouse will move
 temporarily to the middle of the top craft, it will scroll up, take a screenshot, scroll down if crafts are more than 5, take a screenshot again and
 when the texts are recognised, a pop-up window will open with the crafts:
 
