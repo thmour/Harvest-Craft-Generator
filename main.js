@@ -16,6 +16,10 @@ const sharp = require('sharp')
 const robot = require('robotjs')
 const path = require('path')
 const settings = require('electron-settings')
+const { U } = require('win32-api')
+
+const user32 = U.load()
+const game_title = 'Path of Exile'
 
 //ocr init
 let pool = createScheduler()
@@ -113,20 +117,28 @@ async function do_craftnum(source) {
 } 
 
 async function do_shortcut () {
-    reset_crafts()    
+    reset_crafts()
+
+    const hwnd = user32.GetForegroundWindow()
+    if (!hwnd) return;
+    
+    let buffer = Buffer.alloc(255)
+    user32.GetWindowTextW(hwnd, buffer, 255)
+    if (buffer.toString('ucs2').slice(0,game_title.length) != game_title) return;
 
     const my_screen = screen.getDisplayNearestPoint(screen.getCursorScreenPoint())
-    let options = { types: ['screen'], thumbnailSize: my_screen.size }
+    let options = { types: ['window'], thumbnailSize: my_screen.size }
     
     //capture screenshot and add the number of crafts and the crafts
     let old_pos = robot.getMousePos()
     let { width, height } = options.thumbnailSize
-    robot.moveMouse(width * 0.3, height * 0.3)
-    for (let i = 0; i < 5; i++)
-        robot.scrollMouse(0, 200)
+
     await desktopCapturer.getSources(options).then(async sources => {
         for (source of sources) {
-            if (source.display_id == my_screen.id.toString()) {
+            if (source.name == game_title) {
+                robot.moveMouse(width * 0.3, height * 0.3)
+                for (let i = 0; i < 5; i++)
+                    robot.scrollMouse(0, 200)
                 return new Promise(async (resolve, reject) => {
                     // get to top 5 crafts
                     await do_craftnum(source)
@@ -140,11 +152,11 @@ async function do_shortcut () {
     if (num_crafts > 5) {
         //capture screenshot for the rest
         let { width, height } = options.thumbnailSize
-        robot.moveMouse(width * 0.3, height * 0.3)
-        for (let i = 0; i < 5; i++)
-            robot.scrollMouse(0, -200)
         await desktopCapturer.getSources(options).then(async sources => {
-            for (source of sources) {
+            if (source.name == game_title) {
+                robot.moveMouse(width * 0.3, height * 0.3)
+                for (let i = 0; i < 5; i++)
+                    robot.scrollMouse(0, -200)
                 if (source.display_id == my_screen.id.toString()) {
                     return new Promise(async (resolve, reject) => {
                         await do_generate(source)
@@ -249,7 +261,7 @@ app.whenReady()
     let config = await settings.has('global')
     if (!config) {
         await settings.set('global', {
-            hotkey: 'SHIFT+D',
+            hotkey: 'CTRL+SHIFT+D',
         })
     }
 })

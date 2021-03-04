@@ -260,7 +260,6 @@
                         else
                             craft_set[craft] += 1
                     }
-                    console.log(craft_set)
                     for (craft in craft_set) {
                         let [text, level] = craft.split('Level').map(txt => txt.trim())
                         document.write(
@@ -343,7 +342,6 @@
         }
         let { width, height } = document.getElementById('ctable').getBoundingClientRect()
         let win = remote.getCurrentWindow()
-        //win.webContents.openDevTools()
         win.setSize(width, height)
         win.show()
     </script>
